@@ -4,6 +4,10 @@ DIS-NOR-013 | DIS-NOR-014 | DIS-NOR-018
 
 Para rodar: streamlit run app_estruturas_v2.py
 """
+import os
+pdf = "Estruturas_DIS-NOR-013_014_018.pdf"
+st.write(f"PDF existe: {os.path.exists(pdf)}")
+st.write(f"Tamanho: {os.path.getsize(pdf) if os.path.exists(pdf) else 'N/A'} bytes")
 
 import io, subprocess, tempfile, os, glob, json, re
 import streamlit as st
