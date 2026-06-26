@@ -1,0 +1,5 @@
+streamlit
+pdfplumber
+Pillow
+PyPDF2
+pypdfium2
