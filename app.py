@@ -1,14 +1,8 @@
 """
 Consulta de Estruturas Elétricas - Neoenergia Elektro
 DIS-NOR-013 | DIS-NOR-014 | DIS-NOR-018
-
 Para rodar: streamlit run app_estruturas_v2.py
 """
-import os
-pdf = "Estruturas_DIS-NOR-013_014_018.pdf"
-st.write(f"PDF existe: {os.path.exists(pdf)}")
-st.write(f"Tamanho: {os.path.getsize(pdf) if os.path.exists(pdf) else 'N/A'} bytes")
-
 import io, subprocess, tempfile, os, glob, json, re
 import streamlit as st
 from PIL import Image
@@ -16,6 +10,12 @@ from PIL import Image
 PDF_PATH = "Estruturas_DIS-NOR-013_014_018.pdf"
 DPI = 260
 
+# DIAGNÓSTICO TEMPORÁRIO - remover depois
+pdf_size = os.path.getsize(PDF_PATH) if os.path.exists(PDF_PATH) else -1
+st.sidebar.write(f"📄 PDF existe: {os.path.exists(PDF_PATH)}")
+st.sidebar.write(f"📦 Tamanho: {pdf_size:,} bytes")
+if pdf_size < 10_000:
+    st.sidebar.error("⚠️ PDF é só um ponteiro LFS! Git LFS não está ativo no Cloud.")
 # ─────────────────────────────────────────────────────────────────
 # MAPA DE ESTRUTURAS  {código_exibido: (página_no_combinado, título_completo, norma)}
 # ─────────────────────────────────────────────────────────────────
