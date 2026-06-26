@@ -10,13 +10,30 @@ import streamlit as st
 from PIL import Image
 
 # ─────────────────────────────────────────────────────────────────
-# CAMINHOS DOS PDFs — buscados na mesma pasta do app
+# CAMINHOS DOS PDFs — busca flexível pelo número da norma
 # ─────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-PDF_013 = os.path.join(BASE_DIR, "DIS-NOR-013_Projeto_de_Rede_de_Distribuição_Compacta.pdf")
-PDF_014 = os.path.join(BASE_DIR, "DIS-NOR-014-Projeto-Rede-Distribuicao-Aerea-Multiplexada-Baixa-Tensao-REV03.pdf")
-PDF_018 = os.path.join(BASE_DIR, "DIS-NOR-018_Estruturas_para_Redes_de_Distribuição_Aéreas_com_Condutores_Nus_até_36_2_kV.pdf")
+def _find_pdf(norma_num: str) -> str:
+    """Encontra o PDF da norma pelo número (013, 014, 018) sem depender do nome exato."""
+    # Busca em todo o diretório base por arquivos que contenham o número da norma
+    for root, _, files in os.walk(BASE_DIR):
+        for fname in files:
+            if fname.lower().endswith(".pdf") and f"nor-{norma_num}" in fname.lower():
+                return os.path.join(root, fname)
+    # Fallback: procura em /mount/src (Streamlit Cloud)
+    for search_dir in ["/mount/src", "/app", os.getcwd()]:
+        if not os.path.isdir(search_dir):
+            continue
+        for root, _, files in os.walk(search_dir):
+            for fname in files:
+                if fname.lower().endswith(".pdf") and f"nor-{norma_num}" in fname.lower():
+                    return os.path.join(root, fname)
+    return ""
+
+PDF_013 = _find_pdf("013")
+PDF_014 = _find_pdf("014")
+PDF_018 = _find_pdf("018")
 
 DPI = 220
 
@@ -412,8 +429,19 @@ else:
     st.write("")
 
     # ── Verificar se PDF existe
-    if not os.path.exists(pdf_path):
-        st.error(f"PDF não encontrado: `{os.path.basename(pdf_path)}`\n\nCertifique-se de que os 3 PDFs estão na mesma pasta do `app.py`.")
+    if not pdf_path or not os.path.exists(pdf_path):
+        st.error(f"PDF da {norma} não encontrado no servidor.")
+        pdfs_encontrados = []
+        for sd in [BASE_DIR, "/mount/src", os.getcwd()]:
+            if os.path.isdir(sd):
+                for root, _, files in os.walk(sd):
+                    for fn in files:
+                        if fn.lower().endswith(".pdf"):
+                            pdfs_encontrados.append(os.path.join(root, fn))
+        if pdfs_encontrados:
+            st.info("PDFs encontrados:\n" + "\n".join(f"- `{p}`" for p in pdfs_encontrados[:15]))
+        else:
+            st.warning("Nenhum PDF encontrado. Verifique se os arquivos foram commitados no repositório (não via Git LFS).")
     else:
         st.markdown("### 🧩 Desenhos e relação de materiais")
         st.caption("A instalação atual prioriza o poste tubular; o poste DT é mostrado apenas como referência de manutenção.")
